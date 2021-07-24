@@ -2,7 +2,7 @@
 
 namespace API.Migrations
 {
-    public partial class InitialCreate : Migration
+    public partial class Initial : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -33,23 +33,11 @@ namespace API.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "ProductAmounts",
-                columns: table => new
-                {
-                    ProductAmountId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Amount = table.Column<decimal>(type: "decimal", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ProductAmounts", x => x.ProductAmountId);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Products",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false),
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Price = table.Column<decimal>(type: "decimal", nullable: false),
@@ -65,12 +53,6 @@ namespace API.Migrations
                         principalTable: "Categories",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Products_ProductAmounts_Id",
-                        column: x => x.Id,
-                        principalTable: "ProductAmounts",
-                        principalColumn: "ProductAmountId",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -99,6 +81,24 @@ namespace API.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "ProductAmounts",
+                columns: table => new
+                {
+                    ProductAmountId = table.Column<int>(type: "int", nullable: false),
+                    Amount = table.Column<decimal>(type: "decimal", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ProductAmounts", x => x.ProductAmountId);
+                    table.ForeignKey(
+                        name: "FK_ProductAmounts_Products_ProductAmountId",
+                        column: x => x.ProductAmountId,
+                        principalTable: "Products",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_OrderProducts_ProductId1",
                 table: "OrderProducts",
@@ -116,6 +116,9 @@ namespace API.Migrations
                 name: "OrderProducts");
 
             migrationBuilder.DropTable(
+                name: "ProductAmounts");
+
+            migrationBuilder.DropTable(
                 name: "Orders");
 
             migrationBuilder.DropTable(
@@ -123,9 +126,6 @@ namespace API.Migrations
 
             migrationBuilder.DropTable(
                 name: "Categories");
-
-            migrationBuilder.DropTable(
-                name: "ProductAmounts");
         }
     }
 }

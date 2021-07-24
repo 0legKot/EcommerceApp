@@ -1,4 +1,5 @@
 ﻿using API.Model;
+using API.Repositories;
 using API.Views;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -6,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace API.Controllers
@@ -14,64 +16,75 @@ namespace API.Controllers
     [ApiController]
     public class ProductController : ControllerBase
     {
-        private readonly ILogger<ProductController> _logger;
-
-        public ProductController(ILogger<ProductController> logger)
+        readonly IRepository<Product> _repository;
+        public ProductController(IRepository<Product> repository)
         {
-            _logger = logger;
+            _repository = repository;
         }
 
         [HttpGet("Search")]
-        public IEnumerable<ProductView> Search(int page = 1, int categoryId = 0, SortType sortType = SortType.Rating, string searchText = "")
+        public IEnumerable<ProductView> Search(int skip = 0, int take = 0, int categoryId = 0, SortType sortType = SortType.Rating, string searchText = "")
         {
-            return new List<ProductView>() { 
-                new ProductView(
-                    new Product()
-                    { Id = 1, Description = "d", Name = "Name", Price = 1, Rating = 2.1, ProductAmount = new ProductAmount() { Amount = 10 }}  )
-            };
+            Expression<Func<Product, bool>> filter = null;
+
+            if (!string.IsNullOrWhiteSpace(searchText)) {
+                filter = (Product product) => product.Name.Contains(searchText) || product.Description.Contains(searchText);
+            }
+            if (categoryId != 0) {
+                filter = (Product product) => product.Category.Id == categoryId;
+            }
+            if (categoryId != 0 && !string.IsNullOrWhiteSpace(searchText)) {
+                filter = (Product product) => (product.Name.Contains(searchText) || product.Description.Contains(searchText)) && product.Category.Id == categoryId;
+            }
+            
+
+            Func<Product, object> orderBy = null;
+            switch (sortType)
+            {
+                case SortType.Rating :
+                    orderBy = (Product product) => product.Rating;
+                    break;
+                case SortType.Price:
+                    orderBy = (Product product) => -1 * product.Price; //inverted sorting
+                    break;
+                default:
+                    throw new NotImplementedException("Unknown sort type");
+            }
+            return _repository.Get(filter, orderBy, skip,take).Select(product => new ProductView(product)).ToList();
         }
 
-        [HttpGet("GetProduct")]
+        [HttpGet("GetById")]
         public ProductView GetProduct(int productId)
         {
-            return
-                new ProductView(
-                    new Product()
-                    { Id = 1, Description = "d", Name = "Name", Price = 1, Rating = 2.1, ProductAmount = new ProductAmount() { Amount = 10 } });
-            
+            return new ProductView(_repository.GetByID(productId));
         }
 
         [HttpPost("Create")]
-        public IActionResult Create([FromBody]ProductView productView)
+        public IActionResult Create([FromBody] ProductView productView)
         {
             if (productView.Id != 0)
             {
                 return BadRequest("Product Id should NOT be specified");
             }
+            _repository.Insert(productView.ToProduct());
             return Ok();
         }
 
         [HttpPost("Update")]
         public IActionResult Update([FromBody] ProductView productView)
         {
-            if (productView.Id == 0) 
+            if (productView.Id == 0)
             {
                 return BadRequest("Product Id should be specified");
             }
+            _repository.Update(productView.ToProduct());
             return Ok();
         }
 
-        [HttpGet("GetAllCategories")]
-        public IEnumerable<Category> GetAllCategories()
-        {
-            return new List<Category>() {
-                new Category() {Id = 1, Name = "MyCat"}
-            };
-        }
-
-        [HttpPost("Delete")]
+        [HttpDelete("Delete")]
         public IActionResult Delete(int productId)
         {
+            _repository.Delete(productId);
             return Ok();
         }
     }

@@ -1,4 +1,5 @@
 using API.Model;
+using API.Repositories;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -31,6 +32,9 @@ namespace API
             string connection = Configuration.GetConnectionString("StoreConnection");
             services.AddDbContext<StoreDbContext>(options =>
                 options.UseSqlServer(connection));
+            //services.AddTransient<StoreDbContext>();
+            services.AddTransient<IRepository<Product>, ProductRepository>();
+            services.AddTransient<IRepository<Category>, BaseRepository<Category>>();
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {

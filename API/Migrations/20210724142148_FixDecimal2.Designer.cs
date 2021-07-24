@@ -4,14 +4,16 @@ using API.Model;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace API.Migrations
 {
     [DbContext(typeof(StoreDbContext))]
-    partial class StoreDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210724142148_FixDecimal2")]
+    partial class FixDecimal2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -58,7 +60,7 @@ namespace API.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(38,19)");
+                        .HasColumnType("decimal(19,19)");
 
                     b.Property<int>("ProductId1")
                         .HasColumnType("int");
@@ -87,7 +89,7 @@ namespace API.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("Price")
-                        .HasColumnType("decimal(38,19)");
+                        .HasColumnType("decimal(19,19)");
 
                     b.Property<double>("Rating")
                         .HasColumnType("float");

@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Migrations
 {
     [DbContext(typeof(StoreDbContext))]
-    [Migration("20210724103731_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20210724142518_FixDecimal3")]
+    partial class FixDecimal3
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -60,7 +60,7 @@ namespace API.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("Amount")
-                        .HasColumnType("decimal");
+                        .HasColumnType("decimal(38,19)");
 
                     b.Property<int>("ProductId1")
                         .HasColumnType("int");
@@ -75,7 +75,9 @@ namespace API.Migrations
             modelBuilder.Entity("API.Model.Product", b =>
                 {
                     b.Property<int>("Id")
-                        .HasColumnType("int");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<int?>("CategoryId")
                         .HasColumnType("int");
@@ -87,7 +89,7 @@ namespace API.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("Price")
-                        .HasColumnType("decimal");
+                        .HasColumnType("decimal(38,19)");
 
                     b.Property<double>("Rating")
                         .HasColumnType("float");
@@ -102,9 +104,7 @@ namespace API.Migrations
             modelBuilder.Entity("API.Model.ProductAmount", b =>
                 {
                     b.Property<int>("ProductAmountId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("int");
 
                     b.Property<decimal>("Amount")
                         .HasColumnType("decimal");
@@ -136,18 +136,26 @@ namespace API.Migrations
             modelBuilder.Entity("API.Model.Product", b =>
                 {
                     b.HasOne("API.Model.Category", "Category")
-                        .WithMany()
+                        .WithMany("Products")
                         .HasForeignKey("CategoryId");
 
-                    b.HasOne("API.Model.ProductAmount", "ProductAmount")
-                        .WithOne("Product")
-                        .HasForeignKey("API.Model.Product", "Id")
+                    b.Navigation("Category");
+                });
+
+            modelBuilder.Entity("API.Model.ProductAmount", b =>
+                {
+                    b.HasOne("API.Model.Product", "Product")
+                        .WithOne("ProductAmount")
+                        .HasForeignKey("API.Model.ProductAmount", "ProductAmountId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Category");
+                    b.Navigation("Product");
+                });
 
-                    b.Navigation("ProductAmount");
+            modelBuilder.Entity("API.Model.Category", b =>
+                {
+                    b.Navigation("Products");
                 });
 
             modelBuilder.Entity("API.Model.Order", b =>
@@ -155,9 +163,9 @@ namespace API.Migrations
                     b.Navigation("OrderProducts");
                 });
 
-            modelBuilder.Entity("API.Model.ProductAmount", b =>
+            modelBuilder.Entity("API.Model.Product", b =>
                 {
-                    b.Navigation("Product");
+                    b.Navigation("ProductAmount");
                 });
 #pragma warning restore 612, 618
         }

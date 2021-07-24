@@ -13,7 +13,7 @@ namespace API.Model
         public DbSet<Category> Categories { get; set; }
         public DbSet<ProductAmount> ProductAmounts { get; set; }
         public DbSet<OrderProduct> OrderProducts { get; set; }
-        public StoreDbContext(DbContextOptions<StoreDbContext> options) :base(options)
+        public StoreDbContext(DbContextOptions<StoreDbContext> options) : base(options)
         {
             Database.EnsureCreated();
         }
@@ -32,6 +32,13 @@ namespace API.Model
                 .HasOne(productAmount => productAmount.Product)
                 .WithOne(product => product.ProductAmount)
                 .HasForeignKey<Product>(product => product.Id);
+            modelBuilder.Entity<Product>()
+                .HasOne(product => product.ProductAmount)
+                .WithOne(productAmount => productAmount.Product)
+                .HasForeignKey<ProductAmount>(productAmount => productAmount.ProductAmountId);
+            modelBuilder.Entity<Product>()
+                .HasOne(product => product.Category)
+                .WithMany(category => category.Products);
         }
     }
 }
