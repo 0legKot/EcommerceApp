@@ -32,7 +32,6 @@ namespace API
             string connection = Configuration.GetConnectionString("StoreConnection");
             services.AddDbContext<StoreDbContext>(options =>
                 options.UseSqlServer(connection));
-            //services.AddTransient<StoreDbContext>();
             services.AddTransient<IRepository<Product>, ProductRepository>();
             services.AddTransient<IRepository<Category>, BaseRepository<Category>>();
             services.AddControllers();

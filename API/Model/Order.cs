@@ -2,7 +2,7 @@
 
 namespace API.Model
 {
-    public class Order
+    public class Order : IEntity
     {
         public int Id { get; set; }
         public OrderStatus Status { get; set; }

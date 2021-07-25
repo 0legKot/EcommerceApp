@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace API.Repositories
 {
-    public class BaseRepository<TEntity> : IRepository<TEntity> where TEntity : class
+    public class BaseRepository<TEntity> : IRepository<TEntity> where TEntity : class, IEntity
     {
         internal StoreDbContext context;
         internal DbSet<TEntity> dbSet;
@@ -24,8 +24,6 @@ namespace API.Repositories
             Expression<Func<TEntity, bool>> filter = null,
             Func<TEntity, object> orderBy = null, int skip = 0, int take = 0)
         {
-            
-
             return CreateQuery(filter, orderBy, skip, take).ToList();
         }
 
