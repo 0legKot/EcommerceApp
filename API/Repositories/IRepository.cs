@@ -6,10 +6,8 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace API.Repositories
-{
-    public interface IRepository<TEntity> where TEntity : IEntity
-    {
+namespace API.Repositories {
+    public interface IRepository<TEntity> where TEntity : IEntity {
         void Delete(int id);
         IEnumerable<TEntity> Get(
             Expression<Func<TEntity, bool>> filter = null,

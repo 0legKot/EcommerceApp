@@ -1,10 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace API.Model
-{
-    public class OrderProduct
-    {
+namespace API.Model {
+    public class OrderProduct {
         public int OrderId { get; set; }
         public Order Order { get; set; }
         public int ProductId { get; set; }

@@ -1,9 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 
-namespace API.Model
-{
-    public class Product : IEntity
-    {
+namespace API.Model {
+    public class Product : IEntity {
         public int Id { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }

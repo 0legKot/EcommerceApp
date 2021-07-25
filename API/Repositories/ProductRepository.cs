@@ -6,25 +6,20 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
-namespace API.Repositories
-{
-    public class ProductRepository:BaseRepository<Product>
-    {
+namespace API.Repositories {
+    public class ProductRepository : BaseRepository<Product> {
         public ProductRepository(StoreDbContext context) : base(context) { }
-        public override IEnumerable<Product> Get(Expression<Func<Product, bool>> filter = null, Func<Product, object> orderBy = null, int skip = 0, int take = 0)
-        {
+        public override IEnumerable<Product> Get(Expression<Func<Product, bool>> filter = null, Func<Product, object> orderBy = null, int skip = 0, int take = 0) {
             var query = CreateQuery(filter, skip, take)
                 .Include(product => product.ProductAmount)
                 .Include(product => product.Category);
-            if (orderBy != null)
-            {
+            if (orderBy != null) {
                 return query.OrderBy(orderBy).ToList();
             }
             return query.ToList();
         }
-        public override void Update(Product entityToUpdate)
-        {
-            Product product = context.Products.Include(product=>product.ProductAmount).First(product => product.Id == entityToUpdate.Id);
+        public override void Update(Product entityToUpdate) {
+            Product product = context.Products.Include(product => product.ProductAmount).First(product => product.Id == entityToUpdate.Id);
             if (entityToUpdate.Category != null) {
                 Category category = context.Categories.Find(entityToUpdate.Category.Id);
                 product.Category = category;
@@ -36,10 +31,8 @@ namespace API.Repositories
             product.ProductAmount.Amount = entityToUpdate.ProductAmount?.Amount ?? 0;
             context.SaveChanges();
         }
-        public override void Insert(Product entity)
-        {
-            if (entity.Category != null)
-            {
+        public override void Insert(Product entity) {
+            if (entity.Category != null) {
                 Category category = context.Categories.Find(entity.Category.Id);
                 entity.Category = category;
             }
