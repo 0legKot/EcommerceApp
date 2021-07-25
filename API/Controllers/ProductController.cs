@@ -28,13 +28,16 @@ namespace API.Controllers
             Expression<Func<Product, bool>> filter = null;
 
             if (!string.IsNullOrWhiteSpace(searchText)) {
-                filter = (Product product) => product.Name.Contains(searchText) || product.Description.Contains(searchText);
+                filter = (Product product) => product.Name.Contains(searchText) || product.Description.Contains(searchText, StringComparison.OrdinalIgnoreCase);
             }
             if (categoryId != 0) {
                 filter = (Product product) => product.Category.Id == categoryId;
             }
             if (categoryId != 0 && !string.IsNullOrWhiteSpace(searchText)) {
-                filter = (Product product) => (product.Name.Contains(searchText) || product.Description.Contains(searchText)) && product.Category.Id == categoryId;
+                filter = (Product product) => 
+                (product.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                product.Description.Contains(searchText, StringComparison.OrdinalIgnoreCase)) 
+                && product.Category.Id == categoryId;
             }
             
 
@@ -42,10 +45,10 @@ namespace API.Controllers
             switch (sortType)
             {
                 case SortType.Rating :
-                    orderBy = (Product product) => product.Rating;
+                    orderBy = (Product product) => -1 * product.Rating; //inverted sorting
                     break;
                 case SortType.Price:
-                    orderBy = (Product product) => -1 * product.Price; //inverted sorting
+                    orderBy = (Product product) => product.Price; 
                     break;
                 default:
                     throw new NotImplementedException("Unknown sort type");
