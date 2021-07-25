@@ -7,25 +7,25 @@ using System.Linq;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 
-namespace API.Test
-{
-    public class ProductControllerTest
-    {
+namespace API.Test {
+    public class ProductControllerTest {
         IRepository<Product> repository;
         ProductController controller;
         [SetUp]
-        public void Setup()
-        {
+        public void Setup() {
             repository = new FakeRepository<Product>();
             controller = new ProductController(repository);
         }
 
         [Test]
-        public void CreatedProductsAreStored()
-        {
-            var result = controller.Create(new ProductView() { 
-                Name = "Test", Description = "Test2", Amount = 1.1m, Price =1.2m, Rating = 1.3, 
-                Category = new CategoryView() { Id = 1, Name = "TestCategory" } 
+        public void CreatedProductsAreStored() {
+            var result = controller.Create(new ProductView() {
+                Name = "Test",
+                Description = "Test2",
+                Amount = 1.1m,
+                Price = 1.2m,
+                Rating = 1.3,
+                Category = new CategoryView() { Id = 1, Name = "TestCategory" }
             });
             List<Product> allProducts = repository.Get().ToList();
             Assert.AreEqual(allProducts.Count, 1);
@@ -40,8 +40,7 @@ namespace API.Test
         }
 
         [Test]
-        public void StoredProductsAreShownPaginatedFilteredByCategory()
-        {
+        public void StoredProductsAreShownPaginatedFilteredByCategory() {
             FillRepositoryWithBasicProducts();
 
             List<ProductView> searchResult = controller.Search(1, 1, 2).ToList();
@@ -57,8 +56,7 @@ namespace API.Test
         }
 
         [Test]
-        public void StoredProductsAreSortedByPriceCorrectly()
-        {
+        public void StoredProductsAreSortedByPriceCorrectly() {
             FillRepositoryWithBasicProducts();
 
             List<ProductView> searchResult = controller.Search(sortType: SortType.Price).ToList();
@@ -69,8 +67,7 @@ namespace API.Test
         }
 
         [Test]
-        public void StoredProductsAreSortedByRatingCorrectly()
-        {
+        public void StoredProductsAreSortedByRatingCorrectly() {
             FillRepositoryWithBasicProducts();
 
             List<ProductView> searchResult = controller.Search(sortType: SortType.Rating).ToList();
@@ -81,11 +78,9 @@ namespace API.Test
         }
 
         [Test]
-        public void StoredProductsAreFilteredByText()
-        {
+        public void StoredProductsAreFilteredByText() {
             FillRepositoryWithBasicProducts();
-            var product4 = new Product()
-            {
+            var product4 = new Product() {
                 Id = 1,
                 Name = "T_e_s_t4",
                 Description = "Description4",
@@ -99,15 +94,13 @@ namespace API.Test
             List<ProductView> searchResult = controller.Search(searchText: searchText).ToList();
             Assert.AreEqual(3, searchResult.Count);
             Assert.IsTrue(searchResult.All(productView => productView.Name.Contains(searchText,
-                System.StringComparison.OrdinalIgnoreCase) || 
+                System.StringComparison.OrdinalIgnoreCase) ||
                 productView.Description.Contains(searchText, System.StringComparison.OrdinalIgnoreCase)
                 ));
         }
 
-        private void FillRepositoryWithBasicProducts()
-        {
-            var product1 = new Product()
-            {
+        private void FillRepositoryWithBasicProducts() {
+            var product1 = new Product() {
                 Id = 1,
                 Name = "test1",
                 Description = "testDescription1",
@@ -116,8 +109,7 @@ namespace API.Test
                 Category = new Category() { Id = 1, Name = "TestCategory1" }
             };
             product1.ProductAmount = new ProductAmount() { Amount = 1.1m, Product = product1 };
-            var product2 = new Product()
-            {
+            var product2 = new Product() {
                 Id = 2,
                 Name = "Tst2",
                 Description = "TestDescription2",
@@ -126,8 +118,7 @@ namespace API.Test
                 Category = new Category() { Id = 2, Name = "TestCategory2" }
             };
             product2.ProductAmount = new ProductAmount() { Amount = 1.2m, Product = product2 };
-            var product3 = new Product()
-            {
+            var product3 = new Product() {
                 Id = 3,
                 Name = "Test3",
                 Description = "TestDescription3",

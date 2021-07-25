@@ -6,22 +6,18 @@ using API.Views;
 using System.Linq;
 using System.Collections.Generic;
 
-namespace API.Test
-{
-    public class CategoryControllerTest
-    {
+namespace API.Test {
+    public class CategoryControllerTest {
         IRepository<Category> repository;
         CategoryController controller;
         [SetUp]
-        public void Setup()
-        {
+        public void Setup() {
             repository = new FakeRepository<Category>();
             controller = new CategoryController(repository);
         }
 
         [Test]
-        public void CreatedCategoriesAreStored()
-        {
+        public void CreatedCategoriesAreStored() {
             controller.Create(new CategoryView() { Id = 1, Name = "Test" });
             var allCategories = repository.Get().ToList();
             Assert.AreEqual(1, allCategories.Count);
@@ -30,8 +26,7 @@ namespace API.Test
         }
 
         [Test]
-        public void StoredCategoriesAreShown()
-        {
+        public void StoredCategoriesAreShown() {
             var category1 = new Category() { Id = 1, Name = "Test1" };
             var category2 = new Category() { Id = 2, Name = "Test2" };
             repository.Insert(category1);
