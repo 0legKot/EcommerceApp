@@ -24,9 +24,9 @@ namespace API.Test
         {
             controller.Create(new CategoryView() { Id = 1, Name = "Test" });
             var allCategories = repository.Get().ToList();
-            Assert.IsTrue(allCategories.Count == 1);
-            Assert.IsTrue(allCategories[0].Id == 1);
-            Assert.IsTrue(allCategories[0].Name == "Test");
+            Assert.AreEqual(1, allCategories.Count);
+            Assert.AreEqual(1, allCategories[0].Id);
+            Assert.AreEqual("Test", allCategories[0].Name);
         }
 
         [Test]
@@ -37,7 +37,7 @@ namespace API.Test
             repository.Insert(category1);
             repository.Insert(category2);
             List<CategoryView> allCategories = controller.GetAllCategories().ToList();
-            Assert.IsTrue(allCategories.Count == 2);
+            Assert.AreEqual(2, allCategories.Count);
             Assert.IsTrue(allCategories.Any(category => category.Id == category1.Id && category.Name == category1.Name));
             Assert.IsTrue(allCategories.Any(category => category.Id == category2.Id && category.Name == category2.Name));
         }

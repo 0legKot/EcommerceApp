@@ -13,11 +13,14 @@ namespace API.Repositories
         public ProductRepository(StoreDbContext context) : base(context) { }
         public override IEnumerable<Product> Get(Expression<Func<Product, bool>> filter = null, Func<Product, object> orderBy = null, int skip = 0, int take = 0)
         {
-            var result = CreateQuery(filter, orderBy, skip, take)
+            var query = CreateQuery(filter, skip, take)
                 .Include(product => product.ProductAmount)
-                .Include(product => product.Category)
-                .ToList();
-            return result;
+                .Include(product => product.Category);
+            if (orderBy != null)
+            {
+                return query.OrderBy(orderBy).ToList();
+            }
+            return query.ToList();
         }
         public override void Update(Product entityToUpdate)
         {

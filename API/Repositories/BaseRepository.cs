@@ -24,10 +24,15 @@ namespace API.Repositories
             Expression<Func<TEntity, bool>> filter = null,
             Func<TEntity, object> orderBy = null, int skip = 0, int take = 0)
         {
-            return CreateQuery(filter, orderBy, skip, take).ToList();
+            IQueryable<TEntity> query = CreateQuery(filter, skip, take);
+            if (orderBy != null)
+            {
+                return query.OrderBy(orderBy);
+            }
+            return query;
         }
 
-        protected IQueryable<TEntity> CreateQuery(Expression<Func<TEntity, bool>> filter, Func<TEntity, object> orderBy, int skip, int take)
+        protected IQueryable<TEntity> CreateQuery(Expression<Func<TEntity, bool>> filter, int skip, int take)
         {
             IQueryable<TEntity> query = dbSet;
 
@@ -38,18 +43,14 @@ namespace API.Repositories
 
             if (skip != 0)
             {
-                query.Skip(skip);
+                query = query.Skip(skip);
             }
 
             if (take != 0)
             {
-                query.Take(take);
+                query = query.Take(take);
             }
 
-            if (orderBy != null)
-            {
-                query.OrderBy(orderBy);
-            }
             return query;
         }
 

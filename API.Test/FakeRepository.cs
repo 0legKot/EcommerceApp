@@ -16,7 +16,7 @@ namespace API.Test
             TEntity found = entities.First(entity => entity.Id == id);
             entities.Remove(found);
         }
-         IQueryable<TEntity> CreateQuery(Expression<Func<TEntity, bool>> filter, Func<TEntity, object> orderBy, int skip, int take)
+         IQueryable<TEntity> CreateQuery(Expression<Func<TEntity, bool>> filter, int skip, int take)
         {
             IQueryable<TEntity> query = entities.AsQueryable();
 
@@ -27,23 +27,24 @@ namespace API.Test
 
             if (skip != 0)
             {
-                query.Skip(skip);
+                query = query.Skip(skip);
             }
 
             if (take != 0)
             {
-                query.Take(take);
+                query = query.Take(take);
             }
 
-            if (orderBy != null)
-            {
-                query.OrderBy(orderBy);
-            }
             return query;
         }
         public IEnumerable<TEntity> Get(Expression<Func<TEntity, bool>> filter = null, Func<TEntity, object> orderBy = null, int skip = 0, int take = 0)
         {
-            return CreateQuery(filter, orderBy, skip, take).ToList();
+            IQueryable<TEntity> query = CreateQuery(filter, skip, take);
+            if (orderBy != null)
+            {
+                return query.OrderBy(orderBy);
+            }
+            return query;
         }
 
         public TEntity GetByID(int id)
@@ -53,6 +54,7 @@ namespace API.Test
 
         public void Insert(TEntity entity)
         {
+            entity.Id = entities.Count + 1;
             entities.Add(entity);
         }
 
