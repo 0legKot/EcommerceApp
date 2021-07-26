@@ -23,9 +23,18 @@ namespace API.Controllers {
         }
 
         [HttpPost("Create")]
-        public IActionResult Create([FromBody] CategoryView category) {
-            _repository.Insert(new Category() { Id = category.Id, Name = category.Name });
-            return Ok();
+        public IActionResult Create([FromBody] CategoryView categoryView) {
+            if (categoryView.Id != 0) {
+                return BadRequest("Category Id should NOT be specified");
+            }
+
+            var newCategory = new Category() { Id = categoryView.Id, Name = categoryView.Name };
+            try {  
+                _repository.Insert(newCategory);
+            } catch (ApplicationException e) {
+                return BadRequest(e.Message);
+            }
+            return Ok(newCategory.Id);
         }
 
 

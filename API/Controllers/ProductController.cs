@@ -24,15 +24,15 @@ namespace API.Controllers {
             Expression<Func<Product, bool>> filter = null;
 
             if (!string.IsNullOrWhiteSpace(searchText)) {
-                filter = (Product product) => product.Name.Contains(searchText) || product.Description.Contains(searchText, StringComparison.OrdinalIgnoreCase);
+                filter = (Product product) => product.Name.ToUpper().Contains(searchText.ToUpper()) || product.Description.ToUpper().Contains(searchText.ToUpper());
             }
             if (categoryId != 0) {
                 filter = (Product product) => product.Category.Id == categoryId;
             }
             if (categoryId != 0 && !string.IsNullOrWhiteSpace(searchText)) {
                 filter = (Product product) =>
-                (product.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                product.Description.Contains(searchText, StringComparison.OrdinalIgnoreCase))
+                (product.Name.ToUpper().Contains(searchText.ToUpper()) ||
+                product.Description.ToUpper().Contains(searchText.ToUpper()))
                 && product.Category.Id == categoryId;
             }
 
@@ -55,12 +55,19 @@ namespace API.Controllers {
             if (productView.Id != 0) {
                 return BadRequest("Product Id should NOT be specified");
             }
-            try { 
-                _repository.Insert(productView.ToProduct());
+            try {
+                ValidateProductView(productView);
             } catch (ApplicationException e) {
                 return BadRequest(e.Message);
             }
-            return Ok();
+
+            var newProduct = productView.ToProduct();
+            try { 
+                _repository.Insert(newProduct);
+            } catch (ApplicationException e) {
+                return BadRequest(e.Message);
+            }
+            return Ok(newProduct.Id);
         }
 
         [HttpPost("Update")]
@@ -69,21 +76,31 @@ namespace API.Controllers {
                 return BadRequest("Product Id should be specified");
             }
             try {
+                ValidateProductView(productView);
+            } catch (ApplicationException e) {
+                return BadRequest(e.Message);
+            }
+
+            try {
                 _repository.Update(productView.ToProduct());
             } catch (ApplicationException e) {
                 return BadRequest(e.Message);
             }
             return Ok();
         }
-
-        [HttpDelete("Delete")]
-        public IActionResult Delete(int productId) {
-            try { 
-                _repository.Delete(productId);
-            } catch (ApplicationException e) {
-                return BadRequest(e.Message);
+        private void ValidateProductView(ProductView productView) {
+            if (productView.Price <= 0) {
+                throw new ApplicationException("Product Price should be greater than 0");
             }
-            return Ok();
+            if (productView.Amount <= 0) {
+                throw new ApplicationException("Product Amount should be greater than 0");
+            }
+            if (productView.Rating <= 0) {
+                throw new ApplicationException("Product Rating should be greater than 0");
+            }
+            if (string.IsNullOrWhiteSpace(productView.Name)) {
+                throw new ApplicationException("Product Name should NOT be empty");
+            }
         }
     }
 }

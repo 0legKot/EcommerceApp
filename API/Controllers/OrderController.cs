@@ -18,34 +18,46 @@ namespace API.Controllers {
         }
 
         [HttpGet("GetAllOrders")]
-        public IEnumerable<OrderView> GetAllOrders() {
-            var result = _repository.Get();
-            return result.Select(order => new OrderView(order)).ToList();
+        public IEnumerable<OrderOutputView> GetAllOrders() {
+            return _repository.Get().Select(order => new OrderOutputView(order)).ToList();
         }
 
         [HttpGet("GetById")]
-        public OrderView GetOrder(int orderid) {
-            return new OrderView(_repository.GetByID(orderid));
+        public OrderOutputView GetOrder(int orderid) {
+            return new OrderOutputView(_repository.GetByID(orderid));
         }
 
         [HttpPost("Create")]
-        public IActionResult Create([FromBody] OrderView orderView) {
+        public IActionResult Create([FromBody] OrderInputView orderView) {
             if (orderView.Id != 0) {
                 return BadRequest("Order Id should NOT be specified");
             }
-            try { 
-                _repository.Insert(orderView.ToOrder());
+            try {
+                ValidateOrderView(orderView);
             } catch (ApplicationException e) {
                 return BadRequest(e.Message);
             }
-            return Ok();
+
+            var newOrder = orderView.ToOrder();
+            try { 
+                _repository.Insert(newOrder);
+            } catch (ApplicationException e) {
+                return BadRequest(e.Message);
+            }
+            return Ok(newOrder.Id);
         }
 
         [HttpPost("Update")]
-        public IActionResult Update([FromBody] OrderView orderView) {
+        public IActionResult Update([FromBody] OrderInputView orderView) {
             if (orderView.Id == 0) {
                 return BadRequest("Order Id should be specified");
             }
+            try {
+                ValidateOrderView(orderView);
+            } catch (ApplicationException e) {
+                return BadRequest(e.Message);
+            }
+
             try { 
                 _repository.Update(orderView.ToOrder());
             } catch (ApplicationException e) {
@@ -65,6 +77,12 @@ namespace API.Controllers {
                 return BadRequest(e.Message);
             }
             return Ok();
+        }
+
+        private void ValidateOrderView(OrderInputView orderView) {
+            if (orderView.Products.Any(product => product.Amount <= 0)) {
+                throw new ApplicationException("Product Amount should be greater than 0");
+            }          
         }
     }
 }

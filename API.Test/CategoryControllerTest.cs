@@ -5,6 +5,7 @@ using API.Controllers;
 using API.Views;
 using System.Linq;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc;
 
 namespace API.Test {
     public class CategoryControllerTest {
@@ -18,7 +19,8 @@ namespace API.Test {
 
         [Test]
         public void CreatedCategoriesAreStored() {
-            controller.Create(new CategoryView() { Id = 1, Name = "Test" });
+            IActionResult result = controller.Create(new CategoryView() { Id = 0, Name = "Test" });
+            Assert.IsTrue(result is OkObjectResult);
             var allCategories = repository.Get().ToList();
             Assert.AreEqual(1, allCategories.Count);
             Assert.AreEqual(1, allCategories[0].Id);

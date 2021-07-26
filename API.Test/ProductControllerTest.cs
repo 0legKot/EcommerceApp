@@ -19,7 +19,7 @@ namespace API.Test {
 
         [Test]
         public void CreatedProductsAreStored() {
-            var result = controller.Create(new ProductView() {
+            IActionResult result = controller.Create(new ProductView() {
                 Name = "Test",
                 Description = "Test2",
                 Amount = 1.1m,
@@ -27,6 +27,7 @@ namespace API.Test {
                 Rating = 1.3,
                 Category = new CategoryView() { Id = 1, Name = "TestCategory" }
             });
+            Assert.IsTrue(result is OkObjectResult);
             List<Product> allProducts = repository.Get().ToList();
             Assert.AreEqual(allProducts.Count, 1);
             Assert.IsNotNull(allProducts[0]);

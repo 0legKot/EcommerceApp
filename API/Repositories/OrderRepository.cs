@@ -18,6 +18,11 @@ namespace API.Repositories {
             }
             return query.ToList();
         }
+        public override Order GetByID(int id) {
+            return context.Orders.Include(order => order.OrderProducts)
+                .Include(order => order.Products).ThenInclude(product => product.Category)
+                .FirstOrDefault(product => product.Id == id);
+        }
         public override void Update(Order updatedEntity) {
             if (context.Orders.Find(updatedEntity.Id) == null) { throw new ApplicationException("Order not found"); }
             SetProducts(updatedEntity);

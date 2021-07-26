@@ -18,6 +18,12 @@ namespace API.Repositories {
             }
             return query.ToList();
         }
+        public override Product GetByID(int id) {
+            return context.Products
+                .Include(product => product.Category)
+                .Include(product => product.ProductAmount)
+                .FirstOrDefault(product => product.Id == id);
+        }
         public override void Update(Product updatedEntity) {
             Product entityToUpdate = context.Products.Include(product => product.ProductAmount).First(product => product.Id == updatedEntity.Id);
             SetCategory(updatedEntity, entityToUpdate);
