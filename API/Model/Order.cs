@@ -5,5 +5,6 @@ namespace API.Model {
         public int Id { get; set; }
         public OrderStatus Status { get; set; }
         public List<OrderProduct> OrderProducts { get; set; }
+        public List<Product> Products { get; set; }
     }
 }

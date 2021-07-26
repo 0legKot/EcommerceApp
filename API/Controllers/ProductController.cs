@@ -36,18 +36,12 @@ namespace API.Controllers {
                 && product.Category.Id == categoryId;
             }
 
+            Func<Product, object> orderBy = sortType switch {
+                SortType.Rating => (Product product) => -1 * product.Rating, //inverted sorting
+                SortType.Price => (Product product) => product.Price,
+                _ => throw new NotImplementedException("Unknown sort type"),
+            };
 
-            Func<Product, object> orderBy = null;
-            switch (sortType) {
-                case SortType.Rating:
-                    orderBy = (Product product) => -1 * product.Rating; //inverted sorting
-                    break;
-                case SortType.Price:
-                    orderBy = (Product product) => product.Price;
-                    break;
-                default:
-                    throw new NotImplementedException("Unknown sort type");
-            }
             return _repository.Get(filter, orderBy, skip, take).Select(product => new ProductView(product)).ToList();
         }
 
@@ -61,7 +55,11 @@ namespace API.Controllers {
             if (productView.Id != 0) {
                 return BadRequest("Product Id should NOT be specified");
             }
-            _repository.Insert(productView.ToProduct());
+            try { 
+                _repository.Insert(productView.ToProduct());
+            } catch (ApplicationException e) {
+                return BadRequest(e.Message);
+            }
             return Ok();
         }
 
@@ -70,13 +68,21 @@ namespace API.Controllers {
             if (productView.Id == 0) {
                 return BadRequest("Product Id should be specified");
             }
-            _repository.Update(productView.ToProduct());
+            try {
+                _repository.Update(productView.ToProduct());
+            } catch (ApplicationException e) {
+                return BadRequest(e.Message);
+            }
             return Ok();
         }
 
         [HttpDelete("Delete")]
         public IActionResult Delete(int productId) {
-            _repository.Delete(productId);
+            try { 
+                _repository.Delete(productId);
+            } catch (ApplicationException e) {
+                return BadRequest(e.Message);
+            }
             return Ok();
         }
     }

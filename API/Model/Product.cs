@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace API.Model {
     public class Product : IEntity {
@@ -10,5 +11,7 @@ namespace API.Model {
         public double Rating { get; set; }
         public Category Category { get; set; }
         public ProductAmount ProductAmount { get; set; }
+        public List<OrderProduct> OrderProducts { get; set; }
+        public List<Order> Orders { get; set; }
     }
 }

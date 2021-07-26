@@ -18,25 +18,26 @@ namespace API.Repositories {
             }
             return query.ToList();
         }
-        public override void Update(Product entityToUpdate) {
-            Product product = context.Products.Include(product => product.ProductAmount).First(product => product.Id == entityToUpdate.Id);
-            if (entityToUpdate.Category != null) {
-                Category category = context.Categories.Find(entityToUpdate.Category.Id);
-                product.Category = category;
-            }
-            product.Name = entityToUpdate.Name;
-            product.Description = entityToUpdate.Description;
-            product.Price = entityToUpdate.Price;
-            product.Rating = entityToUpdate.Rating;
-            product.ProductAmount.Amount = entityToUpdate.ProductAmount?.Amount ?? 0;
+        public override void Update(Product updatedEntity) {
+            Product entityToUpdate = context.Products.Include(product => product.ProductAmount).First(product => product.Id == updatedEntity.Id);
+            SetCategory(updatedEntity, entityToUpdate);
+            entityToUpdate.Name = updatedEntity.Name;
+            entityToUpdate.Description = updatedEntity.Description;
+            entityToUpdate.Price = updatedEntity.Price;
+            entityToUpdate.Rating = updatedEntity.Rating;
+            entityToUpdate.ProductAmount.Amount = updatedEntity.ProductAmount?.Amount ?? 0;
             context.SaveChanges();
         }
+
         public override void Insert(Product entity) {
-            if (entity.Category != null) {
-                Category category = context.Categories.Find(entity.Category.Id);
-                entity.Category = category;
-            }
+            SetCategory(entity, entity);
             base.Insert(entity);
+        }
+        private void SetCategory(Product updatedEntity, Product entityToUpdate) {
+            if (updatedEntity.Category != null) {
+                Category category = context.Categories.Find(updatedEntity.Category.Id) ?? throw new ApplicationException("Incorrect category");
+                entityToUpdate.Category = category;
+            }
         }
     }
 }

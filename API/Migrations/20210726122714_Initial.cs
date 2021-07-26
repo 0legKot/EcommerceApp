@@ -40,7 +40,7 @@ namespace API.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Price = table.Column<decimal>(type: "decimal", nullable: false),
+                    Price = table.Column<decimal>(type: "decimal(38,19)", nullable: false),
                     Rating = table.Column<double>(type: "float", nullable: false),
                     CategoryId = table.Column<int>(type: "int", nullable: true)
                 },
@@ -61,21 +61,20 @@ namespace API.Migrations
                 {
                     OrderId = table.Column<int>(type: "int", nullable: false),
                     ProductId = table.Column<int>(type: "int", nullable: false),
-                    ProductId1 = table.Column<int>(type: "int", nullable: false),
-                    Amount = table.Column<decimal>(type: "decimal", nullable: false)
+                    Amount = table.Column<decimal>(type: "decimal(38,19)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_OrderProducts", x => new { x.ProductId, x.OrderId });
+                    table.PrimaryKey("PK_OrderProducts", x => new { x.OrderId, x.ProductId });
                     table.ForeignKey(
-                        name: "FK_OrderProducts_Orders_ProductId",
-                        column: x => x.ProductId,
+                        name: "FK_OrderProducts_Orders_OrderId",
+                        column: x => x.OrderId,
                         principalTable: "Orders",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_OrderProducts_Products_ProductId1",
-                        column: x => x.ProductId1,
+                        name: "FK_OrderProducts_Products_ProductId",
+                        column: x => x.ProductId,
                         principalTable: "Products",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -86,7 +85,7 @@ namespace API.Migrations
                 columns: table => new
                 {
                     ProductAmountId = table.Column<int>(type: "int", nullable: false),
-                    Amount = table.Column<decimal>(type: "decimal", nullable: false)
+                    Amount = table.Column<decimal>(type: "decimal(38,19)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -100,9 +99,9 @@ namespace API.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_OrderProducts_ProductId1",
+                name: "IX_OrderProducts_ProductId",
                 table: "OrderProducts",
-                column: "ProductId1");
+                column: "ProductId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Products_CategoryId",

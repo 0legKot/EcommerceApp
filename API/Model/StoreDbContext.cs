@@ -15,14 +15,22 @@ namespace API.Model {
             Database.EnsureCreated();
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
-            modelBuilder.Entity<OrderProduct>().HasKey(orderProduct => new {
-                orderProduct.ProductId,
-                orderProduct.OrderId
-            });
-            modelBuilder.Entity<OrderProduct>()
-                .HasOne(orderProduct => orderProduct.Order)
-                .WithMany(order => order.OrderProducts)
-                .HasForeignKey(orderProduct => orderProduct.ProductId);
+            modelBuilder.Entity<Order>()
+            .HasMany(order => order.Products)
+            .WithMany(product => product.Orders)
+            .UsingEntity<OrderProduct>(
+                j => j
+                    .HasOne(orderProduct => orderProduct.Product)
+                    .WithMany(product => product.OrderProducts)
+                    .HasForeignKey(orderProduct => orderProduct.ProductId),
+                j => j
+                    .HasOne(orderProduct => orderProduct.Order)
+                    .WithMany(order => order.OrderProducts)
+                    .HasForeignKey(orderProduct => orderProduct.OrderId),
+                j => {
+                    j.ToTable("OrderProducts");
+                });
+
             modelBuilder.Entity<ProductAmount>()
                 .HasOne(productAmount => productAmount.Product)
                 .WithOne(product => product.ProductAmount)
@@ -31,6 +39,7 @@ namespace API.Model {
                 .HasOne(product => product.ProductAmount)
                 .WithOne(productAmount => productAmount.Product)
                 .HasForeignKey<ProductAmount>(productAmount => productAmount.ProductAmountId);
+
             modelBuilder.Entity<Product>()
                 .HasOne(product => product.Category)
                 .WithMany(category => category.Products);

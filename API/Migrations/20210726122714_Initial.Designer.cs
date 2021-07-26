@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Migrations
 {
     [DbContext(typeof(StoreDbContext))]
-    [Migration("20210724142518_FixDecimal3")]
-    partial class FixDecimal3
+    [Migration("20210726122714_Initial")]
+    partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -53,21 +53,18 @@ namespace API.Migrations
 
             modelBuilder.Entity("API.Model.OrderProduct", b =>
                 {
-                    b.Property<int>("ProductId")
+                    b.Property<int>("OrderId")
                         .HasColumnType("int");
 
-                    b.Property<int>("OrderId")
+                    b.Property<int>("ProductId")
                         .HasColumnType("int");
 
                     b.Property<decimal>("Amount")
                         .HasColumnType("decimal(38,19)");
 
-                    b.Property<int>("ProductId1")
-                        .HasColumnType("int");
+                    b.HasKey("OrderId", "ProductId");
 
-                    b.HasKey("ProductId", "OrderId");
-
-                    b.HasIndex("ProductId1");
+                    b.HasIndex("ProductId");
 
                     b.ToTable("OrderProducts");
                 });
@@ -107,7 +104,7 @@ namespace API.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("Amount")
-                        .HasColumnType("decimal");
+                        .HasColumnType("decimal(38,19)");
 
                     b.HasKey("ProductAmountId");
 
@@ -118,13 +115,13 @@ namespace API.Migrations
                 {
                     b.HasOne("API.Model.Order", "Order")
                         .WithMany("OrderProducts")
-                        .HasForeignKey("ProductId")
+                        .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("API.Model.Product", "Product")
-                        .WithMany()
-                        .HasForeignKey("ProductId1")
+                        .WithMany("OrderProducts")
+                        .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -165,6 +162,8 @@ namespace API.Migrations
 
             modelBuilder.Entity("API.Model.Product", b =>
                 {
+                    b.Navigation("OrderProducts");
+
                     b.Navigation("ProductAmount");
                 });
 #pragma warning restore 612, 618
