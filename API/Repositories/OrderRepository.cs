@@ -7,7 +7,7 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace API.Repositories {
-    public class OrderRepository : BaseRepository<Order> {
+    public class OrderRepository : BaseRepository<Order>, IOrderRepository {
         public OrderRepository(StoreDbContext context) : base(context) { }
         public override IEnumerable<Order> Get(Expression<Func<Order, bool>> filter = null, Func<Order, object> orderBy = null, int skip = 0, int take = 0) {
             var query = CreateQuery(filter, skip, take)

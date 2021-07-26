@@ -8,7 +8,7 @@ using System.Text;
 
 namespace API.Test {
     class FakeRepository<TEntity> : IRepository<TEntity> where TEntity : IEntity {
-        private List<TEntity> entities = new List<TEntity>();
+        protected List<TEntity> entities = new List<TEntity>();
         public void Delete(int id) {
             TEntity found = entities.First(entity => entity.Id == id);
             entities.Remove(found);

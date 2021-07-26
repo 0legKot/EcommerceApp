@@ -12,8 +12,8 @@ namespace API.Controllers {
     [Route("api/[controller]")]
     [ApiController]
     public class OrderController : ControllerBase {
-        readonly OrderRepository _repository;
-        public OrderController(OrderRepository repository) {
+        readonly IOrderRepository _repository;
+        public OrderController(IOrderRepository repository) {
             _repository = repository;
         }
 
