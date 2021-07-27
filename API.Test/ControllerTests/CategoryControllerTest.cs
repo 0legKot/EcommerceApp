@@ -28,6 +28,13 @@ namespace API.Test {
         }
 
         [Test]
+        public void CreatedCategoryIdCannotBeNonZero() {
+            IActionResult result = controller.Create(new CategoryView() { Id = 1, Name = "Test" });
+            Assert.IsTrue(result is BadRequestObjectResult);
+            Assert.AreEqual("Category Id should NOT be specified", (result as BadRequestObjectResult).Value);
+        }
+
+        [Test]
         public void StoredCategoriesAreShown() {
             var category1 = new Category() { Id = 1, Name = "Test1" };
             var category2 = new Category() { Id = 2, Name = "Test2" };
