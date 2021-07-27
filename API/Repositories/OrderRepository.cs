@@ -24,7 +24,9 @@ namespace API.Repositories {
                 .FirstOrDefault(product => product.Id == id);
         }
         public override void Update(Order updatedEntity) {
-            if (context.Orders.Find(updatedEntity.Id) == null) { throw new ApplicationException("Order not found"); }
+            if (context.Orders.AsNoTracking().FirstOrDefault(order => order.Id == updatedEntity.Id) == null) { 
+                throw new ApplicationException("Order not found"); 
+            }
             SetProducts(updatedEntity);
             context.SaveChanges();
         }
@@ -55,10 +57,15 @@ namespace API.Repositories {
         }
 
         private void SetProducts(Order updatedEntity) {
+            List<int> allNewProductIds = updatedEntity.OrderProducts.Select(product => product.ProductId).ToList();
             HashSet<int> newProductIds = updatedEntity.OrderProducts.Select(product => product.ProductId).ToHashSet();
+            if (allNewProductIds.Count != newProductIds.Count) {
+                throw new ApplicationException($"All Product Ids should be unique");
+            }
             List<ProductAmount> productAmounts = GetProductAmounts(newProductIds);
             List<Product> products = GetProducts(newProductIds);
-            ValidateOrder(updatedEntity, productAmounts, context.Orders.Find(updatedEntity.Id), products);
+            Order oldEntity = context.Orders.Include(order => order.OrderProducts).FirstOrDefault(order => order.Id == updatedEntity.Id);
+            ValidateOrder(updatedEntity, productAmounts, oldEntity, products);
 
             List<OrderProduct> existingProducts = context.OrderProducts.Where(ordProduct => ordProduct.OrderId == updatedEntity.Id).ToList();
             var productsToRemove = existingProducts.Where(prod => !newProductIds.Contains(prod.ProductId));
@@ -76,12 +83,17 @@ namespace API.Repositories {
                 newProduct.ProductId = newProduct.Product.Id;
                 newProduct.OrderId = updatedEntity.Id;
             }
-            context.OrderProducts.AddRange(newProducts);
+            // To prevent errors with IDENTITY_INSERT 
+            if (oldEntity == null) {
+                context.OrderProducts.AddRange(newProducts);
+            } else {
+                oldEntity.OrderProducts.AddRange(newProducts);
+            }
         }
 
         private List<ProductAmount> GetProductAmounts(HashSet<int> newProductIds) {
             return context.ProductAmounts
-                            .Include(prodAmount => prodAmount.Product).AsNoTracking()
+                            .Include(prodAmount => prodAmount.Product)
                             .Where(prodAmount => newProductIds.Contains(prodAmount.Product.Id))
                             .ToList();
         }

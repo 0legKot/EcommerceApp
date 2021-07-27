@@ -25,7 +25,9 @@ namespace API.Repositories {
                 .FirstOrDefault(product => product.Id == id);
         }
         public override void Update(Product updatedEntity) {
-            Product entityToUpdate = context.Products.Include(product => product.ProductAmount).First(product => product.Id == updatedEntity.Id);
+            Product entityToUpdate = context.Products
+                .Include(product => product.ProductAmount)
+                .FirstOrDefault(product => product.Id == updatedEntity.Id) ?? throw new ApplicationException("No Products found");
             SetCategory(updatedEntity, entityToUpdate);
             entityToUpdate.Name = updatedEntity.Name;
             entityToUpdate.Description = updatedEntity.Description;

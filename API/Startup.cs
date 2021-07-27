@@ -29,7 +29,7 @@ namespace API {
             services.AddDbContext<StoreDbContext>(options =>
                 options.UseSqlServer(connection));
             services.AddTransient<IRepository<Product>, ProductRepository>();
-            services.AddTransient<OrderRepository>();
+            services.AddTransient<IOrderRepository, OrderRepository>();
             services.AddTransient<IRepository<Category>, BaseRepository<Category>>();
             services.AddControllers();
             services.AddSwaggerGen(c => {

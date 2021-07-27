@@ -51,7 +51,7 @@ namespace API.Controllers {
             return new ProductView(_repository.GetByID(productId));
         }
 
-        [HttpPost("Create")]
+        [HttpPut("Create")]
         public IActionResult Create([FromBody] ProductView productView) {
             if (productView.Id != 0) {
                 return BadRequest("Product Id should NOT be specified");
@@ -71,7 +71,7 @@ namespace API.Controllers {
             return Ok(newProduct.Id);
         }
 
-        [HttpPost("Update")]
+        [HttpPatch("Update")]
         public IActionResult Update([FromBody] ProductView productView) {
             if (productView.Id == 0) {
                 return BadRequest("Product Id should be specified");

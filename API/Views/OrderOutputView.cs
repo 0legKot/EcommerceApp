@@ -11,12 +11,12 @@ namespace API.Views {
         public OrderStatus Status { get; set; }
         public decimal TotalPrice { get; set; }
         public OrderOutputView(Order order) {
-            Id = order.Id;
-            Status = order.Status;
-            Products = order.OrderProducts
+            Id = order?.Id ?? 0;
+            Status = order?.Status ?? 0;
+            Products = order?.OrderProducts?
                 .Select(product => new ProductView(product.Product) {
                     Amount = product.Amount
-            }).ToList();
+            })?.ToList() ?? new List<ProductView>();
             TotalPrice = Products.Sum(product => product.Price * product.Amount);
         }
     }

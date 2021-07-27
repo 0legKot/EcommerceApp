@@ -27,7 +27,7 @@ namespace API.Controllers {
             return new OrderOutputView(_repository.GetByID(orderid));
         }
 
-        [HttpPost("Create")]
+        [HttpPut("Create")]
         public IActionResult Create([FromBody] OrderInputView orderView) {
             if (orderView.Id != 0) {
                 return BadRequest("Order Id should NOT be specified");
@@ -47,7 +47,7 @@ namespace API.Controllers {
             return Ok(newOrder.Id);
         }
 
-        [HttpPost("Update")]
+        [HttpPatch("Update")]
         public IActionResult Update([FromBody] OrderInputView orderView) {
             if (orderView.Id == 0) {
                 return BadRequest("Order Id should be specified");
@@ -80,7 +80,7 @@ namespace API.Controllers {
         }
 
         private void ValidateOrderView(OrderInputView orderView) {
-            if (orderView.Products.Any(product => product.Amount <= 0)) {
+            if (orderView.Products?.Any(product => product.Amount <= 0) ?? false) {
                 throw new ApplicationException("Product Amount should be greater than 0");
             }          
         }
