@@ -14,6 +14,7 @@ namespace API.Controllers {
     [Route("api/[controller]")]
     [ApiController]
     public class ProductController : ControllerBase {
+        public const double MaxRating = 5.0;
         readonly IRepository<Product> _repository;
         public ProductController(IRepository<Product> repository) {
             _repository = repository;
@@ -97,6 +98,9 @@ namespace API.Controllers {
             }
             if (productView.Rating <= 0) {
                 throw new ApplicationException("Product Rating should be greater than 0");
+            }
+            if (productView.Rating > MaxRating) {
+                throw new ApplicationException($"Product Rating should NOT be greater than {MaxRating}");
             }
             if (string.IsNullOrWhiteSpace(productView.Name)) {
                 throw new ApplicationException("Product Name should NOT be empty");

@@ -18,29 +18,6 @@ namespace API.Test {
         }
 
         [Test]
-        public void CreatedProductsAreStored() {
-            IActionResult result = controller.Create(new ProductView() {
-                Name = "Test",
-                Description = "Test2",
-                Amount = 1.1m,
-                Price = 1.2m,
-                Rating = 1.3,
-                Category = new CategoryView() { Id = 1, Name = "TestCategory" }
-            });
-            Assert.IsTrue(result is OkObjectResult);
-            List<Product> allProducts = repository.Get().ToList();
-            Assert.AreEqual(allProducts.Count, 1);
-            Assert.IsNotNull(allProducts[0]);
-            Assert.AreEqual(1, allProducts[0].Id);
-            Assert.AreEqual("Test", allProducts[0].Name);
-            Assert.AreEqual("Test2", allProducts[0].Description);
-            Assert.AreEqual(1.1m, allProducts[0].ProductAmount?.Amount);
-            Assert.AreEqual(1.2m, allProducts[0].Price);
-            Assert.AreEqual(1.3, allProducts[0].Rating, 0.00001);
-            Assert.AreEqual(1, allProducts[0].Category?.Id);
-        }
-
-        [Test]
         public void StoredProductsAreShownPaginatedFilteredByCategory() {
             FillRepositoryWithBasicProducts();
 
@@ -98,6 +75,307 @@ namespace API.Test {
                 System.StringComparison.OrdinalIgnoreCase) ||
                 productView.Description.Contains(searchText, System.StringComparison.OrdinalIgnoreCase)
                 ));
+        }
+
+        [Test]
+        public void ProductCanBeRetrievedById() {
+            FillRepositoryWithBasicProducts();
+
+            ProductView searchResult = controller.GetProduct(1);
+            Assert.AreEqual(1, searchResult?.Id);
+        }
+
+        [Test]
+        public void CreatedProductsAreStored() {
+            IActionResult result = controller.Create(new ProductView() {
+                Name = "Test",
+                Description = "Test2",
+                Amount = 1.1m,
+                Price = 1.2m,
+                Rating = 1.3,
+                Category = new CategoryView() { Id = 1, Name = "TestCategory" }
+            });
+            Assert.IsTrue(result is OkObjectResult);
+            List<Product> allProducts = repository.Get().ToList();
+            Assert.AreEqual(1, allProducts.Count);
+            Assert.IsNotNull(allProducts[0]);
+            Assert.AreEqual(1, allProducts[0].Id);
+            Assert.AreEqual("Test", allProducts[0].Name);
+            Assert.AreEqual("Test2", allProducts[0].Description);
+            Assert.AreEqual(1.1m, allProducts[0].ProductAmount?.Amount);
+            Assert.AreEqual(1.2m, allProducts[0].Price);
+            Assert.AreEqual(1.3, allProducts[0].Rating, 0.00001);
+            Assert.AreEqual(1, allProducts[0].Category?.Id);
+        }
+
+        [Test]
+        public void NewProductCannotHaveId() {
+            IActionResult result = controller.Create(new ProductView() {
+                Id = 1,
+                Name = "Test",
+                Description = "Test2",
+                Amount = 1.1m,
+                Price = 1.2m,
+                Rating = 1.3,
+                Category = new CategoryView() { Id = 1, Name = "TestCategory" }
+            });
+            Assert.IsTrue(result is BadRequestObjectResult);
+            Assert.AreEqual("Product Id should NOT be specified", (result as BadRequestObjectResult).Value);
+        }
+
+        [Test]
+        public void NewProductCannotHaveNonPositivePrice() {
+            IActionResult result = controller.Create(new ProductView() {
+                Id = 0,
+                Name = "Test",
+                Description = "Test2",
+                Amount = 1.1m,
+                Price = 0m,
+                Rating = 1.3,
+                Category = new CategoryView() { Id = 1, Name = "TestCategory" }
+            });
+            Assert.IsTrue(result is BadRequestObjectResult);
+            Assert.AreEqual("Product Price should be greater than 0", (result as BadRequestObjectResult).Value);
+            result = controller.Create(new ProductView() {
+                Id = 0,
+                Name = "Test",
+                Description = "Test2",
+                Amount = 1.1m,
+                Price = -1m,
+                Rating = 1.3,
+                Category = new CategoryView() { Id = 1, Name = "TestCategory" }
+            });
+            Assert.IsTrue(result is BadRequestObjectResult);
+            Assert.AreEqual("Product Price should be greater than 0", (result as BadRequestObjectResult).Value);
+        }
+
+        [Test]
+        public void NewProductCannotHaveNonPositiveAmount() {
+            IActionResult result = controller.Create(new ProductView() {
+                Id = 0,
+                Name = "Test",
+                Description = "Test2",
+                Amount = 0m,
+                Price = 1.1m,
+                Rating = 1.3,
+                Category = new CategoryView() { Id = 1, Name = "TestCategory" }
+            });
+            Assert.IsTrue(result is BadRequestObjectResult);
+            Assert.AreEqual("Product Amount should be greater than 0", (result as BadRequestObjectResult).Value);
+            result = controller.Create(new ProductView() {
+                Id = 0,
+                Name = "Test",
+                Description = "Test2",
+                Amount = -1.1m,
+                Price = 1m,
+                Rating = 1.3,
+                Category = new CategoryView() { Id = 1, Name = "TestCategory" }
+            });
+            Assert.IsTrue(result is BadRequestObjectResult);
+            Assert.AreEqual("Product Amount should be greater than 0", (result as BadRequestObjectResult).Value);
+        }
+
+        [Test]
+        public void NewProductCannotHaveNonPositiveRating() {
+            IActionResult result = controller.Create(new ProductView() {
+                Id = 0,
+                Name = "Test",
+                Description = "Test2",
+                Amount = 1m,
+                Price = 1.1m,
+                Rating = 0,
+                Category = new CategoryView() { Id = 1, Name = "TestCategory" }
+            });
+            Assert.IsTrue(result is BadRequestObjectResult);
+            Assert.AreEqual("Product Rating should be greater than 0", (result as BadRequestObjectResult).Value);
+            result = controller.Create(new ProductView() {
+                Id = 0,
+                Name = "Test",
+                Description = "Test2",
+                Amount = 1.1m,
+                Price = 1m,
+                Rating = -1.3,
+                Category = new CategoryView() { Id = 1, Name = "TestCategory" }
+            });
+            Assert.IsTrue(result is BadRequestObjectResult);
+            Assert.AreEqual("Product Rating should be greater than 0", (result as BadRequestObjectResult).Value);
+        }
+
+        [Test]
+        public void NewProductCannotHaveRatingGreaterThanMaxRating() {
+            IActionResult result = controller.Create(new ProductView() {
+                Id = 0,
+                Name = "Test",
+                Description = "Test2",
+                Amount = 1m,
+                Price = 1.1m,
+                Rating = ProductController.MaxRating + 0.1,
+                Category = new CategoryView() { Id = 1, Name = "TestCategory" }
+            });
+            Assert.IsTrue(result is BadRequestObjectResult);
+            Assert.AreEqual($"Product Rating should NOT be greater than {ProductController.MaxRating}", (result as BadRequestObjectResult).Value);
+        }
+
+        [Test]
+        public void NewProductCannotHaveEmptyName() {
+            IActionResult result = controller.Create(new ProductView() {
+                Id = 0,
+                Name = "",
+                Description = "Test2",
+                Amount = 1m,
+                Price = 1.1m,
+                Rating = 1.1,
+                Category = new CategoryView() { Id = 1, Name = "TestCategory" }
+            });
+            Assert.IsTrue(result is BadRequestObjectResult);
+            Assert.AreEqual($"Product Name should NOT be empty", (result as BadRequestObjectResult).Value);
+        }
+
+        [Test]
+        public void UpdatedProductsAreStored() {
+            FillRepositoryWithBasicProducts();
+            IActionResult result = controller.Update(new ProductView() {
+                Id = 1,
+                Name = "Test",
+                Description = "Test2",
+                Amount = 1.4m,
+                Price = 1.5m,
+                Rating = 1.6,
+                Category = new CategoryView() { Id = 2, Name = "TestCategory2" }
+            });
+            Assert.IsTrue(result is OkResult);
+            Product product = repository.GetByID(1);
+            Assert.IsNotNull(product);
+            Assert.AreEqual(1, product.Id);
+            Assert.AreEqual("Test", product.Name);
+            Assert.AreEqual("Test2", product.Description);
+            Assert.AreEqual(1.4m, product.ProductAmount?.Amount);
+            Assert.AreEqual(1.5m, product.Price);
+            Assert.AreEqual(1.6, product.Rating, 0.00001);
+            Assert.AreEqual(2, product.Category?.Id);
+        }
+
+        [Test]
+        public void UpdatedProductCannotHaveZeroId() {
+            IActionResult result = controller.Update(new ProductView() {
+                Id = 0,
+                Name = "Test",
+                Description = "Test2",
+                Amount = 1.1m,
+                Price = 1.2m,
+                Rating = 1.3,
+                Category = new CategoryView() { Id = 1, Name = "TestCategory" }
+            });
+            Assert.IsTrue(result is BadRequestObjectResult);
+            Assert.AreEqual("Product Id should be specified", (result as BadRequestObjectResult).Value);
+        }
+
+        [Test]
+        public void UpdatedProductCannotHaveNonPositivePrice() {
+            IActionResult result = controller.Update(new ProductView() {
+                Id = 1,
+                Name = "Test",
+                Description = "Test2",
+                Amount = 1.1m,
+                Price = 0m,
+                Rating = 1.3,
+                Category = new CategoryView() { Id = 1, Name = "TestCategory" }
+            });
+            Assert.IsTrue(result is BadRequestObjectResult);
+            Assert.AreEqual("Product Price should be greater than 0", (result as BadRequestObjectResult).Value);
+            result = controller.Update(new ProductView() {
+                Id = 1,
+                Name = "Test",
+                Description = "Test2",
+                Amount = 1.1m,
+                Price = -1m,
+                Rating = 1.3,
+                Category = new CategoryView() { Id = 1, Name = "TestCategory" }
+            });
+            Assert.IsTrue(result is BadRequestObjectResult);
+            Assert.AreEqual("Product Price should be greater than 0", (result as BadRequestObjectResult).Value);
+        }
+
+        [Test]
+        public void UpdatedProductCannotHaveNonPositiveAmount() {
+            IActionResult result = controller.Update(new ProductView() {
+                Id = 1,
+                Name = "Test",
+                Description = "Test2",
+                Amount = 0m,
+                Price = 1.1m,
+                Rating = 1.3,
+                Category = new CategoryView() { Id = 1, Name = "TestCategory" }
+            });
+            Assert.IsTrue(result is BadRequestObjectResult);
+            Assert.AreEqual("Product Amount should be greater than 0", (result as BadRequestObjectResult).Value);
+            result = controller.Update(new ProductView() {
+                Id = 1,
+                Name = "Test",
+                Description = "Test2",
+                Amount = -1.1m,
+                Price = 1m,
+                Rating = 1.3,
+                Category = new CategoryView() { Id = 1, Name = "TestCategory" }
+            });
+            Assert.IsTrue(result is BadRequestObjectResult);
+            Assert.AreEqual("Product Amount should be greater than 0", (result as BadRequestObjectResult).Value);
+        }
+
+        [Test]
+        public void UpdatedProductCannotHaveNonPositiveRating() {
+            IActionResult result = controller.Update(new ProductView() {
+                Id = 1,
+                Name = "Test",
+                Description = "Test2",
+                Amount = 1m,
+                Price = 1.1m,
+                Rating = 0,
+                Category = new CategoryView() { Id = 1, Name = "TestCategory" }
+            });
+            Assert.IsTrue(result is BadRequestObjectResult);
+            Assert.AreEqual("Product Rating should be greater than 0", (result as BadRequestObjectResult).Value);
+            result = controller.Update(new ProductView() {
+                Id = 1,
+                Name = "Test",
+                Description = "Test2",
+                Amount = 1.1m,
+                Price = 1m,
+                Rating = -1.3,
+                Category = new CategoryView() { Id = 1, Name = "TestCategory" }
+            });
+            Assert.IsTrue(result is BadRequestObjectResult);
+            Assert.AreEqual("Product Rating should be greater than 0", (result as BadRequestObjectResult).Value);
+        }
+
+        [Test]
+        public void UpdatedProductCannotHaveRatingGreaterThanMaxRating() {
+            IActionResult result = controller.Update(new ProductView() {
+                Id = 1,
+                Name = "Test",
+                Description = "Test2",
+                Amount = 1m,
+                Price = 1.1m,
+                Rating = ProductController.MaxRating + 0.1,
+                Category = new CategoryView() { Id = 1, Name = "TestCategory" }
+            });
+            Assert.IsTrue(result is BadRequestObjectResult);
+            Assert.AreEqual($"Product Rating should NOT be greater than {ProductController.MaxRating}", (result as BadRequestObjectResult).Value);
+        }
+
+        [Test]
+        public void UpdatedProductCannotHaveEmptyName() {
+            IActionResult result = controller.Update(new ProductView() {
+                Id = 1,
+                Name = "",
+                Description = "Test2",
+                Amount = 1m,
+                Price = 1.1m,
+                Rating = 1.1,
+                Category = new CategoryView() { Id = 1, Name = "TestCategory" }
+            });
+            Assert.IsTrue(result is BadRequestObjectResult);
+            Assert.AreEqual($"Product Name should NOT be empty", (result as BadRequestObjectResult).Value);
         }
 
         private void FillRepositoryWithBasicProducts() {
