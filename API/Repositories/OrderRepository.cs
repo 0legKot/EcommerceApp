@@ -33,13 +33,15 @@ namespace API.Repositories {
             base.Insert(entity);
         }
         public void ReleaseOrder(int orderId) {
-            Order order = context.Orders.Include(order => order.OrderProducts).First(order => order.Id == orderId);
+            Order order = context.Orders.Include(order => order.OrderProducts).FirstOrDefault(order => order.Id == orderId) ?? throw new ApplicationException("Order not found");
             HashSet<int> productIds = order.OrderProducts.Select(product => product.ProductId).ToHashSet();
             List<ProductAmount> productAmounts = GetProductAmounts(productIds);
-            Order oldOrder = context.Orders.Find(orderId) ?? throw new ApplicationException("Order not found");
             List<Product> products = GetProducts(productIds);
 
-            ValidateOrder(order, productAmounts, oldOrder, products);
+            ValidateOrder(order, productAmounts, order, products);
+            if (order.OrderProducts.Count == 0) {
+                throw new ApplicationException("Order without products cannot be released");
+            }
 
             foreach (var productAmount in productAmounts) {
                 productAmount.Amount -= order.OrderProducts.First(prod => prod.ProductId == productAmount.Product.Id).Amount;

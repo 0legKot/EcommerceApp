@@ -25,7 +25,7 @@ namespace API.Views {
         public Product ToProduct() {
             var p = new Product() {
                 Id = Id,
-                Category = new Category() { Id = Category.Id, Name = Category.Name },
+                Category = new Category() { Id = Category?.Id ?? 0, Name = Category?.Name ?? "" },
                 Name = Name,
                 Description = Description,
                 Price = Price,
